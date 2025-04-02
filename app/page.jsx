@@ -1,4 +1,4 @@
-import HomeSearch from "@/components/home-search";
+import { HomeSearch } from "@/components/home-search";
 import { Button } from "@/components/ui/button";
 import CarCard from "@/components/car-card";
 import { bodyTypes, carMakes, faqItems, featuredCars } from "@/lib/data";
