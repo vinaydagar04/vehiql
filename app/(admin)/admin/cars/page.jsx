@@ -1,7 +1,7 @@
 import React from "react";
-import CarsList from "./_components/car-list";
+import { CarsList } from "./_components/car-list";
 
-export const metadata = {
+const metadata = {
   title: "Cars | Vehiql Admin",
   description: "Manage cars in your marketplace",
 };
