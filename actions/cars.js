@@ -1,3 +1,5 @@
+"use server";
+
 import { db } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
 import { auth } from "@clerk/nextjs/server";
@@ -117,16 +119,16 @@ export async function processCarImageWithAI(file) {
   }
 }
 
+// Add a car to the database with images
 export async function addCar({ carData, images }) {
   try {
     const { userId } = await auth();
-    if (!userId) throw new Error("User not authenticated");
+    if (!userId) throw new Error("Unauthorized");
 
     const user = await db.user.findUnique({
-      where: {
-        clerkUserId: userId,
-      },
+      where: { clerkUserId: userId },
     });
+
     if (!user) throw new Error("User not found");
 
     // Create a unique folder name for this car's images
@@ -163,7 +165,7 @@ export async function addCar({ carData, images }) {
 
       // Upload the file buffer directly
       const { data, error } = await supabase.storage
-        .from("car-images")
+        .from("car-image")
         .upload(filePath, imageBuffer, {
           contentType: `image/${fileExtension}`,
         });
@@ -172,14 +174,17 @@ export async function addCar({ carData, images }) {
         console.error("Error uploading image:", error);
         throw new Error(`Failed to upload image: ${error.message}`);
       }
+
       // Get the public URL for the uploaded file
       const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/car-images/${filePath}`; // disable cache in config
 
       imageUrls.push(publicUrl);
     }
+
     if (imageUrls.length === 0) {
-      throw new Error("No images uploaded successfully.");
+      throw new Error("No valid images were uploaded");
     }
+
     // Add the car to the database
     const car = await db.car.create({
       data: {
