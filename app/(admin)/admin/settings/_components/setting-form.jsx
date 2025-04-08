@@ -5,6 +5,7 @@ import {
   saveWorkingHours,
   updateUserRole,
 } from "@/actions/settings";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -17,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useFetch from "@/hooks/use-fetch";
-import { Clock, Shield } from "lucide-react";
+import { Clock, Loader2, Save, Shield } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // Day names for display
 const DAYS = [
@@ -72,6 +74,42 @@ const SettingForm = () => {
     error: updateRoleError,
   } = useFetch(updateUserRole);
 
+  // Set working hours when settings data is fetched
+  useEffect(() => {
+    if (settingsData?.success && settingsData.data) {
+      const dealership = settingsData.data;
+
+      // Map the working hours
+      if (dealership.workingHours.length > 0) {
+        const mappedHours = DAYS.map((day) => {
+          // Find matching working hour
+          const hourData = dealership.workingHours.find(
+            (h) => h.dayOfWeek === day.value
+          );
+
+          if (hourData) {
+            return {
+              dayOfWeek: hourData.dayOfWeek,
+              openTime: hourData.openTime,
+              closeTime: hourData.closeTime,
+              isOpen: hourData.isOpen,
+            };
+          }
+
+          // Default values if no working hour is found
+          return {
+            dayOfWeek: day.value,
+            openTime: "09:00",
+            closeTime: "18:00",
+            isOpen: day.value !== "SUNDAY",
+          };
+        });
+
+        setWorkingHours(mappedHours);
+      }
+    }
+  }, [settingsData]);
+
   useEffect(() => {
     fetchDealershipInfo();
     fetchUsers();
@@ -85,6 +123,17 @@ const SettingForm = () => {
     };
     setWorkingHours(updateHours);
   };
+
+  const handleSaveHours = async () => {
+    await saveHours(workingHours);
+  };
+
+  useEffect(() => {
+    if (saveResult?.success) {
+      toast.success("Working hours saved successfully!");
+      fetchDealershipInfo();
+    }
+  }, [saveResult]);
 
   return (
     <div className="space-y-6">
@@ -180,12 +229,24 @@ const SettingForm = () => {
                   );
                 })}
               </div>
+
+              <div className="mt-6 flex justify-end">
+                <Button onClick={handleSaveHours} disabled={savingHours}>
+                  {savingHours ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Working Hours
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
-        </TabsContent>
-        <TabsContent value="admins" className="space-y-6 mt-6">
-          {" "}
-          Change your password here.
         </TabsContent>
       </Tabs>
     </div>
