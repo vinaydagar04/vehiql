@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Badge, Filter } from "lucide-react";
+import { Badge, Filter, Sliders, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import CarFilterControls from "./filter-control";
@@ -234,6 +234,43 @@ const CarFilters = ({ filters }) => {
         </SelectContent>
       </Select>
       {/* Desktop Filters */}
+      {/* Desktop Filters */}
+      <div className="hidden lg:block sticky top-24">
+        <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+            <h3 className="font-medium flex items-center">
+              <Sliders className="mr-2 h-4 w-4" />
+              Filters
+            </h3>
+            {activeFilterCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-sm text-gray-600"
+                onClick={clearFilters}
+              >
+                <X className="mr-1 h-3 w-3" />
+                Clear All
+              </Button>
+            )}
+          </div>
+
+          <div className="p-4">
+            <CarFilterControls
+              filters={filters}
+              currentFilters={currentFilters}
+              onFilterChange={handleFilterChange}
+              onClearFilter={handleClearFilter}
+            />
+          </div>
+
+          <div className="px-4 py-4 border-t">
+            <Button onClick={applyFilters} className="w-full">
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
