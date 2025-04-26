@@ -1,4 +1,4 @@
-import arcjet, { createMiddleware } from "@arcjet/next";
+import arcjet, { createMiddleware, detectBot, shield } from "@arcjet/next";
 import {
   auth,
   clerkMiddleware,
