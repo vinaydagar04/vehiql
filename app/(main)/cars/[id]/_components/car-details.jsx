@@ -5,7 +5,17 @@ import { useAuth } from "@clerk/clerk-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Car, Currency, Fuel, Gauge, Heart, Share2 } from "lucide-react";
+import {
+  Calendar,
+  Car,
+  Currency,
+  Fuel,
+  Gauge,
+  Heart,
+  LocateFixed,
+  MessageSquare,
+  Share2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -84,6 +94,15 @@ const CarDetails = ({ car, testDriveInfo }) => {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied to clipboard");
+  };
+
+  const handleBookTestDrive = () => {
+    if (!isSignedIn) {
+      toast.error("Please sign in to book a test drive");
+      router.push("/sign-in");
+      return;
+    }
+    router.push(`/test-drive/${car.id}`);
   };
 
   return (
@@ -215,6 +234,222 @@ const CarDetails = ({ car, testDriveInfo }) => {
               </DialogHeader>
             </DialogContent>
           </Dialog>
+          {/* Request More Info */}
+          <Card className="my-6">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-lg font-medium mb-2">
+                <MessageSquare className="h-5 w-5 text-blue-600" />
+                <h3>Have Questions?</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Our representatives are available to answer all your queries
+                about this vehicle.
+              </p>
+              <a href="mailto:help@vehiql.in">
+                <Button variant="outline" className="w-full">
+                  Request Info
+                </Button>
+              </a>
+            </CardContent>
+          </Card>
+
+          {(car.status === "SOLD" || car.status === "UNAVAILABLE") && (
+            <Alert variant="destructive">
+              <AlertTitle className="capitalize">
+                This car is {car.status.toLowerCase()}
+              </AlertTitle>
+              <AlertDescription>Please check again later.</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Book Test Drive Button */}
+          {car.status !== "SOLD" && car.status !== "UNAVAILABLE" && (
+            <Button
+              className="w-full py-6 text-lg"
+              onClick={handleBookTestDrive}
+              disabled={testDriveInfo.userTestDrive}
+            >
+              <Calendar className="mr-2 h-5 w-5" />
+              {testDriveInfo.userTestDrive
+                ? `Booked for ${format(
+                    new Date(testDriveInfo.userTestDrive.bookingDate),
+                    "EEEE, MMMM d, yyyy"
+                  )}`
+                : "Book Test Drive"}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Details & Features Section */}
+      <div className="mt-12 p-6 bg-white rounded-lg shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-2xl font-bold mb-6">Description</h3>
+            <p className="whitespace-pre-line text-gray-700">
+              {car.description}
+            </p>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold mb-6">Features</h3>
+            <ul className="grid grid-cols-1 gap-2">
+              <li className="flex items-center gap-2">
+                <span className="h-2 w-2 bg-blue-600 rounded-full"></span>
+                {car.transmission} Transmission
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-2 w-2 bg-blue-600 rounded-full"></span>
+                {car.fuelType} Engine
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-2 w-2 bg-blue-600 rounded-full"></span>
+                {car.bodyType} Body Style
+              </li>
+              {car.seats && (
+                <li className="flex items-center gap-2">
+                  <span className="h-2 w-2 bg-blue-600 rounded-full"></span>
+                  {car.seats} Seats
+                </li>
+              )}
+              <li className="flex items-center gap-2">
+                <span className="h-2 w-2 bg-blue-600 rounded-full"></span>
+                {car.color} Exterior
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      {/* Specifications Section */}
+      <div className="mt-8 p-6 bg-white rounded-lg shadow-sm">
+        <h2 className="text-2xl font-bold mb-6">Specifications</h2>
+        <div className="bg-gray-50 rounded-lg p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Make</span>
+              <span className="font-medium">{car.make}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Model</span>
+              <span className="font-medium">{car.model}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Year</span>
+              <span className="font-medium">{car.year}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Body Type</span>
+              <span className="font-medium">{car.bodyType}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Fuel Type</span>
+              <span className="font-medium">{car.fuelType}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Transmission</span>
+              <span className="font-medium">{car.transmission}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Mileage</span>
+              <span className="font-medium">
+                {car.mileage.toLocaleString()} miles
+              </span>
+            </div>
+            <div className="flex justify-between py-2 border-b">
+              <span className="text-gray-600">Color</span>
+              <span className="font-medium">{car.color}</span>
+            </div>
+            {car.seats && (
+              <div className="flex justify-between py-2 border-b">
+                <span className="text-gray-600">Seats</span>
+                <span className="font-medium">{car.seats}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Dealership Location Section */}
+      <div className="mt-8 p-6 bg-white rounded-lg shadow-sm">
+        <h2 className="text-2xl font-bold mb-6">Dealership Location</h2>
+        <div className="bg-gray-50 rounded-lg p-6">
+          <div className="flex flex-col md:flex-row gap-6 justify-between">
+            {/* Dealership Name and Address */}
+            <div className="flex items-start gap-3">
+              <LocateFixed className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium">Vehiql Motors</h4>
+                <p className="text-gray-600">
+                  {testDriveInfo.dealership?.address || "Not Available"}
+                </p>
+                <p className="text-gray-600 mt-1">
+                  Phone: {testDriveInfo.dealership?.phone || "Not Available"}
+                </p>
+                <p className="text-gray-600">
+                  Email: {testDriveInfo.dealership?.email || "Not Available"}
+                </p>
+              </div>
+            </div>
+
+            {/* Working Hours */}
+            <div className="md:w-1/2 lg:w-1/3">
+              <h4 className="font-medium mb-2">Working Hours</h4>
+              <div className="space-y-2">
+                {testDriveInfo.dealership?.workingHours
+                  ? testDriveInfo.dealership.workingHours
+                      .sort((a, b) => {
+                        const days = [
+                          "MONDAY",
+                          "TUESDAY",
+                          "WEDNESDAY",
+                          "THURSDAY",
+                          "FRIDAY",
+                          "SATURDAY",
+                          "SUNDAY",
+                        ];
+                        return (
+                          days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek)
+                        );
+                      })
+                      .map((day) => (
+                        <div
+                          key={day.dayOfWeek}
+                          className="flex justify-between text-sm"
+                        >
+                          <span className="text-gray-600">
+                            {day.dayOfWeek.charAt(0) +
+                              day.dayOfWeek.slice(1).toLowerCase()}
+                          </span>
+                          <span>
+                            {day.isOpen
+                              ? `${day.openTime} - ${day.closeTime}`
+                              : "Closed"}
+                          </span>
+                        </div>
+                      ))
+                  : // Default hours if none provided
+                    [
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day, index) => (
+                      <div key={day} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{day}</span>
+                        <span>
+                          {index < 5
+                            ? "9:00 - 18:00"
+                            : index === 5
+                            ? "10:00 - 16:00"
+                            : "Closed"}
+                        </span>
+                      </div>
+                    ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
