@@ -32,8 +32,8 @@ model Car {
   make              String
   model             String
   year              Int
-  price             Decimal            @db.Decimal(10, 2)
-  mileage           Int
+  price             Float          
+  mileage           Float
   color             String
   fuelType          String
   transmission      String
